@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/c637592d13.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>balloon-popping game!🎈</title>
+    <link rel="shortcut icon" href="img/images.jpg" type="image/x-icon">
+</head>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background-color: #abeaed;
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 2.5em;
+        color: #333;
+    }
+
+    i {
+        font-size: 120px;
+        cursor: pointer;
+        position: absolute;
+        bottom: -120px; /* Start from below the screen */
+        animation: rise 5s linear forwards; /* Animation to move upwards */
+    }
+
+    i:hover {
+        transform: scale(1.1);
+    }
+
+    @keyframes rise {
+        to {
+            transform: translateY(-100vh); /* Move to the top of the screen */
+        }
+    }
+</style>
+<!-- <i class="fa-solid fa-cloud fa-2xl"></i> -->
+
+
+<body>
+    <h1>Score : <span>0</span></h1>
+    <script>
+        let color = ["red", "royalblue", "seagreen"];
+        let points = { "red": 1, "royalblue": 3, "seagreen": 5 };
+
+        setInterval(() => {
+            let random = Math.floor(Math.random() * 3);
+            let fly = document.createElement('i');
+            fly.classList.add('fab');
+            fly.classList.add('fa-fly');
+            // let cloud =querySelector(fa-soild)
+            // fly-classList.add('fa-cloud');
+            // fly.style.fontSize = Math.floor(Math.random() * 100) + 100 + 'px';
+            fly.style.color = color[random];
+
+            // Random horizontal position
+            let x = Math.floor(Math.random() * (window.innerWidth - 120));
+            fly.style.left = `${x}px`;
+
+            document.body.appendChild(fly);
+
+            fly.addEventListener('click', function () {
+                let scoreElement = document.querySelector('span');
+                let currentScore = parseInt(scoreElement.textContent);
+                let addedPoints = points[fly.style.color] || 1;
+                scoreElement.textContent = currentScore + addedPoints;
+                fly.remove();
+            });
+
+            // Remove fly after animation ends (5 seconds)
+            setTimeout(() => {
+                if (fly.parentElement) {
+                    fly.remove();
+                }
+            }, 5000);
+
+        }, 1500);
+    </script>
+</body>
+
+</html>
