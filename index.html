@@ -6,26 +6,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://kit.fontawesome.com/c637592d13.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <title>balloon-popping game!🎈</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Balloon-Popping Game!🎈</title>
     <link rel="shortcut icon" href="img/images.jpg" type="image/x-icon">
 </head>
 
 <style>
+    *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
     body {
         margin: 0;
         padding: 0;
         height: 100vh;
         overflow: hidden;
         font-family: Arial, sans-serif;
-        background-color: #abeaed;
+        background: linear-gradient(135deg, #abeaed, #87CEEB);
     }
 
     h1 {
         text-align: center;
         margin-top: 20px;
-        font-size: 2.5em;
+        font-size: 3.5em;
         color: #333;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     }
+
+    .info-container {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .info-container h2 {
+        font-size: 1.5em;
+        color: #333;
+        
+    }
+
+#stage{
+    font-size: xx-large;
+    font-weight: 900;
+    font-style:italic;
+}
 
     i {
         font-size: 120px;
@@ -35,33 +64,71 @@
         animation: rise 5s linear forwards; /* Animation to move upwards */
     }
 
-    i:hover {
-        transform: scale(1.1);
-    }
-
     @keyframes rise {
         to {
             transform: translateY(-100vh); /* Move to the top of the screen */
         }
     }
-</style>
-<!-- <i class="fa-solid fa-cloud fa-2xl"></i> -->
 
+    .cloud {
+        font-size: 100px;
+        color: white;
+        position: absolute;
+        animation: drift 20s linear infinite;
+    }
+
+    @keyframes drift {
+        to {
+            transform: translateX(100vw);
+        }
+    }
+</style>
 
 <body>
     <h1>Score : <span>0</span></h1>
+    <div class="info-container">
+        <h2>Stage : <span id="stage">Easy</span></h2>
+        <h2>Target : <span id="target">20</span></h2>
+        <h2>Time Left : <span id="time-left">60</span>s</h2>
+    </div>
+ 
     <script>
         let color = ["red", "royalblue", "seagreen"];
-        let points = { "red": 1, "royalblue": 3, "seagreen": 5 };
+        let points = { "red": -5, "royalblue": 3, "seagreen": 5 };
+        let score = 0;
+        let stage = 1;
+        let targetScores = [20, 50, 100]; // Target scores for Easy, Medium, Hard
+        let timeLimits = [60, 45, 30]; // Time limits for Easy, Medium, Hard
+        let spawnIntervals = [1500, 1000, 500]; // Spawn intervals for Easy, Medium, Hard
+        let timeLeft = timeLimits[stage - 1];
+        let intervalId;
+        let timerId;
 
-        setInterval(() => {
+        const scoreElement = document.querySelector('span');
+        const stageElement = document.getElementById('stage');
+        const timeLeftElement = document.getElementById('time-left');
+        const targetElement = document.getElementById('target');
+
+        function startGame() {
+            score = 0;
+            scoreElement.textContent = score;
+            stageElement.textContent = stage === 1 ? "Easy" : stage === 2 ? "Medium" : "Hard";
+            targetElement.textContent = targetScores[stage - 1];
+            timeLeft = timeLimits[stage - 1];
+            timeLeftElement.textContent = timeLeft;
+
+            clearInterval(intervalId);
+            clearInterval(timerId);
+
+            intervalId = setInterval(createFly, spawnIntervals[stage - 1]);
+            timerId = setInterval(updateTimer, 1000);
+        }
+
+        function createFly() {
             let random = Math.floor(Math.random() * 3);
             let fly = document.createElement('i');
             fly.classList.add('fab');
             fly.classList.add('fa-fly');
-            // let cloud =querySelector(fa-soild)
-            // fly-classList.add('fa-cloud');
-            // fly.style.fontSize = Math.floor(Math.random() * 100) + 100 + 'px';
             fly.style.color = color[random];
 
             // Random horizontal position
@@ -71,11 +138,34 @@
             document.body.appendChild(fly);
 
             fly.addEventListener('click', function () {
-                let scoreElement = document.querySelector('span');
-                let currentScore = parseInt(scoreElement.textContent);
-                let addedPoints = points[fly.style.color] || 1;
-                scoreElement.textContent = currentScore + addedPoints;
+                score += points[fly.style.color] || 1;
+                scoreElement.textContent = score;
                 fly.remove();
+
+                // Check if target score is reached
+                if (score >= targetScores[stage - 1]) {
+                    if (stage < 3) {
+                        Swal.fire({
+                            title: 'Stage Complete!',
+                            text: `You've completed the ${stage === 1 ? "Easy" : "Medium"} stage!`,
+                            icon: 'success',
+                            confirmButtonText: 'Next Stage'
+                        }).then(() => {
+                            stage++;
+                            startGame();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'You Win!',
+                            text: 'Congratulations! You completed all stages!',
+                            icon: 'success',
+                            confirmButtonText: 'Play Again'
+                        }).then(() => {
+                            stage = 1;
+                            startGame();
+                        });
+                    }
+                }
             });
 
             // Remove fly after animation ends (5 seconds)
@@ -84,8 +174,45 @@
                     fly.remove();
                 }
             }, 5000);
+        }
 
-        }, 1500);
+        function createCloud() {
+            let cloud = document.createElement('i');
+            cloud.classList.add('fas');
+            cloud.classList.add('fa-cloud');
+            cloud.classList.add('cloud');
+            cloud.style.top = `${Math.floor(Math.random() * 50)}%`;
+            cloud.style.left = `-100px`;
+            document.body.appendChild(cloud);
+
+            // Remove cloud after animation ends
+            setTimeout(() => {
+                if (cloud.parentElement) {
+                    cloud.remove();
+                }
+            }, 20000);
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timeLeftElement.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                Swal.fire({
+                    title: 'Game Over!',
+                    text: 'You ran out of time!',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                }).then(() => {
+                    stage = 1;
+                    startGame();
+                });
+            }
+        }
+
+        // Start the game
+        startGame();
+        setInterval(createCloud, 6000); // Add a cloud every 6 seconds
     </script>
 </body>
 
